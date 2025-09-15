@@ -1,3 +1,4 @@
 /godot-cpp/
 extension_api.json
 .sconsign.dblite
+*.obj
