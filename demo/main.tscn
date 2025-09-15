@@ -1,9 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://cjqv84u1avi3u"]
-
-[ext_resource type="Texture2D" uid="uid://5njcld42sy8u" path="res://icon.svg" id="1_ig7tw"]
+[gd_scene format=3 uid="uid://cjqv84u1avi3u"]
 
 [node name="Main" type="Node"]
 
-[node name="GDExample" type="GDExample" parent="."]
-texture = ExtResource("1_ig7tw")
-centered = false
+[node name="SphericalHexGrid" type="SphericalHexGrid" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 5, 10)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.766044, 0.642788, 0, -0.642788, 0.766044, 0, 5, 0)

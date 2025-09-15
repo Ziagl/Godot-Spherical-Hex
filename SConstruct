@@ -18,7 +18,7 @@ sources = Glob("src/*.cpp")
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        "demo/bin/libsphericalhex.{}.{}.framework/libsphericalhex.{}.{}".format(
+        "demo/bin/libsphericalhexgrid.{}.{}.framework/libsphericalhexgrid.{}.{}".format(
             env["platform"], env["target"], env["platform"], env["target"]
         ),
         source=sources,
@@ -26,17 +26,17 @@ if env["platform"] == "macos":
 elif env["platform"] == "ios":
     if env["ios_simulator"]:
         library = env.StaticLibrary(
-            "demo/bin/libsphericalhex.{}.{}.simulator.a".format(env["platform"], env["target"]),
+            "demo/bin/libsphericalhexgrid.{}.{}.simulator.a".format(env["platform"], env["target"]),
             source=sources,
         )
     else:
         library = env.StaticLibrary(
-            "demo/bin/libsphericalhex.{}.{}.a".format(env["platform"], env["target"]),
+            "demo/bin/libsphericalhexgrid.{}.{}.a".format(env["platform"], env["target"]),
             source=sources,
         )
 else:
     library = env.SharedLibrary(
-        "demo/bin/libsphericalhex{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+        "demo/bin/libsphericalhexgrid{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
         source=sources,
     )
 
