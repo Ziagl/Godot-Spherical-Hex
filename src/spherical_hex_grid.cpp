@@ -14,8 +14,8 @@
 
 using namespace godot;
 
-static inline std::string coord_key(const HexCoord &c) {
-    return std::to_string(c.q) + "_" + std::to_string(c.r);
+static inline std::string coord_key(int face_index, const HexCoord &c) {
+    return std::to_string(face_index) + ":" + std::to_string(c.q) + "_" + std::to_string(c.r);
 }
 
 static inline Vector3 face_normal_at_point(const Vector3 &p) { return p.normalized(); }
@@ -39,7 +39,7 @@ void SphericalHexGrid::_ready() {
     generate_grid();
 }
 
-Object *SphericalHexGrid::create_hex_tile_at(const Vector3 &position, const Vector3 &normal, const HexCoord &coord) {
+Object *SphericalHexGrid::create_hex_tile_at(const Vector3 &position, const Vector3 &normal, int face_index, const HexCoord &coord) {
     HexTile *tile = memnew(HexTile);
     add_child(tile);
 
@@ -60,7 +60,7 @@ Object *SphericalHexGrid::create_hex_tile_at(const Vector3 &position, const Vect
     tile->set_transform(Transform3D(basis, position * radius));
     tile->set_coordinate(coord.q, coord.r);
 
-    tiles[coord_key(coord)] = tile->get_instance_id();
+    tiles[coord_key(face_index, coord)] = tile->get_instance_id();
     return tile;
 }
 
@@ -90,32 +90,59 @@ void SphericalHexGrid::generate_grid() {
 
     faces.clear();
     auto base = generate_icosahedron();
+    // Use base icosahedron faces; density is controlled via grid_radius
     for (auto &f : base) {
-        auto subdiv = f.subdivide(resolution);
-        faces.insert(faces.end(), subdiv.begin(), subdiv.end());
+        faces.push_back(f);
     }
 
     HexGridSettings settings{ hex_size, (int)(6.0 * std::pow(2.0, resolution)) };
     HexGrid hex_grid(settings);
 
-    for (auto &face : faces) {
-        hex_grid.generate_on_face(face);
+    for (size_t i = 0; i < faces.size(); ++i) {
+        hex_grid.generate_on_face(faces[i], (int)i);
     }
 
-    // Create tiles
-    for (auto &entry : hex_grid.get_all_positions()) {
-        create_hex_tile_at(entry.second, face_normal_at_point(entry.second), entry.first);
+    // Create tiles (deduplicate by position to avoid overlaps at face borders)
+    std::unordered_map<std::string, ObjectID> pos_to_id;
+    std::vector<std::pair<FaceHexCoord, std::string>> created_entries;
+    auto &all = hex_grid.get_all_positions();
+    for (auto it = all.begin(); it != all.end(); ++it) {
+        Vector3 p = it->second.normalized();
+        // key by quantized position
+        int kx = (int)std::round(p.x * 100000.0f);
+        int ky = (int)std::round(p.y * 100000.0f);
+        int kz = (int)std::round(p.z * 100000.0f);
+        std::string pk = std::to_string(kx) + "," + std::to_string(ky) + "," + std::to_string(kz);
+        if (pos_to_id.find(pk) != pos_to_id.end()) continue;
+        Vector3 n = face_normal_at_point(p);
+        if (Object *obj = create_hex_tile_at(p, n, it->first.face_index, it->first.hex)) {
+            pos_to_id[pk] = Object::cast_to<Node>(obj)->get_instance_id();
+            created_entries.emplace_back(it->first, pk);
+        }
     }
 
     // Connect neighbors
-    for (auto &entry : hex_grid.get_all_positions()) {
-        auto neighbors_pos = hex_grid.get_neighbor_positions(entry.first);
+    // Link neighbors using hash lookups to avoid O(N^2) nearest searches
+    for (auto &pair : created_entries) {
+        const FaceHexCoord &fhc = pair.first;
+        auto neighbors_pos = hex_grid.get_neighbor_positions(fhc);
         Array neighbor_objs;
         for (auto &npos : neighbors_pos) {
-            if (Object *tile = get_tile_at_world_pos(npos)) neighbor_objs.append(tile);
+            Vector3 np = npos.normalized();
+            int nkx = (int)std::round(np.x * 100000.0f);
+            int nky = (int)std::round(np.y * 100000.0f);
+            int nkz = (int)std::round(np.z * 100000.0f);
+            std::string npk = std::to_string(nkx) + "," + std::to_string(nky) + "," + std::to_string(nkz);
+            auto it_id = pos_to_id.find(npk);
+            if (it_id != pos_to_id.end()) {
+                if (Object *o = ObjectDB::get_instance(it_id->second)) neighbor_objs.append(o);
+            }
         }
-        if (Object *obj = get_tile_at_world_pos(entry.second)) {
-            if (HexTile *tile = Object::cast_to<HexTile>(obj)) tile->connect_neighbors(neighbor_objs);
+        auto it_self = pos_to_id.find(pair.second);
+        if (it_self != pos_to_id.end()) {
+            if (Object *obj = ObjectDB::get_instance(it_self->second)) {
+                if (HexTile *tile = Object::cast_to<HexTile>(obj)) tile->connect_neighbors(neighbor_objs);
+            }
         }
     }
 }

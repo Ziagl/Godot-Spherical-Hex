@@ -39,7 +39,7 @@ private:
     std::vector<IcosahedronFace> faces;
     std::unordered_map<std::string, ObjectID> tiles; // key -> tile id
 
-    Object *create_hex_tile_at(const Vector3 &position, const Vector3 &normal, const HexCoord &coord);
+    Object *create_hex_tile_at(const Vector3 &position, const Vector3 &normal, int face_index, const HexCoord &coord);
     Object *get_tile_at_world_pos(const Vector3 &pos) const;
 };
 

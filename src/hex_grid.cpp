@@ -35,11 +35,12 @@ static inline HexCoord pixel_to_hex(const Vector2 &p, float size) {
 
 static inline Vector3 project_onto_sphere(const Vector3 &p) { return p.normalized(); }
 
-void HexGrid::generate_on_face(const IcosahedronFace &face) {
+void HexGrid::generate_on_face(const IcosahedronFace &face, int face_index) {
     Vector3 center = face.center().normalized();
     Vector3 normal = face.normal;
     Vector3 tangent = (face.v[1] - face.v[0]).normalized();
-    Vector3 bitangent = normal.cross(tangent);
+    Vector3 bitangent = normal.cross(tangent).normalized();
+    tangent = bitangent.cross(normal).normalized();
     Basis orientation(tangent, bitangent, normal);
 
     std::vector<HexCoord> local;
@@ -51,20 +52,20 @@ void HexGrid::generate_on_face(const IcosahedronFace &face) {
                 Vector2 pos2d = hex_to_pixel(hc, settings.hex_size);
                 Vector3 pos3d = orientation.xform(Vector3(pos2d.x, pos2d.y, 0));
                 Vector3 world_pos = project_onto_sphere(center + pos3d);
-                hex_positions.emplace(hc, world_pos);
+                hex_positions.emplace(FaceHexCoord(face_index, hc), world_pos);
                 local.push_back(hc);
             }
         }
     }
 
-    FaceGridData data{face, local, center, orientation};
+    FaceGridData data{face_index, face, local, center, orientation};
     face_grids.push_back(std::move(data));
 }
 
-std::vector<Vector3> HexGrid::get_neighbor_positions(const HexCoord &coord) const {
+std::vector<Vector3> HexGrid::get_neighbor_positions(const FaceHexCoord &coord) const {
     std::vector<Vector3> out;
-    for (auto &n : coord.neighbors()) {
-        auto it = hex_positions.find(n);
+    for (auto &n : coord.hex.neighbors()) {
+        auto it = hex_positions.find(FaceHexCoord(coord.face_index, n));
         if (it != hex_positions.end()) out.push_back(it->second);
     }
     return out;
