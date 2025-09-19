@@ -12,6 +12,16 @@ void HexTile::_bind_methods() {
     ClassDB::bind_method(D_METHOD("connect_neighbors", "tiles"), &HexTile::connect_neighbors);
 }
 
+void HexTile::_ready() {
+    Node3D *child = memnew(Node3D);
+    Transform3D transform(
+        Basis::from_scale(Vector3(0.5, 0.5, 0.5)),
+        Vector3(0, 0, 0));
+    child->set_transform(transform);
+    child->add_to_group("hex_tiles");
+    add_child(child);
+}
+
 Array HexTile::get_neighbors() {
     Array arr;
     arr.resize(neighbor_ids.size());

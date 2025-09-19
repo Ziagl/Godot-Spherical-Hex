@@ -24,6 +24,9 @@ public:
     void set_radius(double r) { radius = (float)r; }
     void set_resolution(int32_t res) { resolution = res < 0 ? 0 : res; }
     void set_hex_size(double s) { hex_size = (float)s; }
+    float get_radius() const { return radius; }
+    int32_t get_resolution() const { return resolution; }
+    float get_hex_size() const { return hex_size; }
     Object *get_tile_at_position(const Vector3 &world_pos);
 
 protected:

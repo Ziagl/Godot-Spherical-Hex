@@ -22,6 +22,9 @@ static inline Vector3 face_normal_at_point(const Vector3 &p) { return p.normaliz
 
 void SphericalHexGrid::_bind_methods() {
     ClassDB::bind_method(D_METHOD("generate_grid"), &SphericalHexGrid::generate_grid);
+    ClassDB::bind_method(D_METHOD("get_radius"), &SphericalHexGrid::get_radius);
+    ClassDB::bind_method(D_METHOD("get_resolution"), &SphericalHexGrid::get_resolution);
+    ClassDB::bind_method(D_METHOD("get_hex_size"), &SphericalHexGrid::get_hex_size);
     ClassDB::bind_method(D_METHOD("set_radius", "r"), &SphericalHexGrid::set_radius);
     ClassDB::bind_method(D_METHOD("set_resolution", "res"), &SphericalHexGrid::set_resolution);
     ClassDB::bind_method(D_METHOD("set_hex_size", "size"), &SphericalHexGrid::set_hex_size);

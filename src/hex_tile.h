@@ -19,6 +19,8 @@ public:
     void set_coordinate(int32_t q, int32_t r);
     void connect_neighbors(const Array &tiles);
 
+    void _ready() override;
+
 protected:
     static void _bind_methods();
 
