@@ -27,6 +27,8 @@ public:
     float get_radius() const { return radius; }
     int32_t get_resolution() const { return resolution; }
     float get_hex_size() const { return hex_size; }
+    void set_use_geodesic(bool v) { use_geodesic = v; }
+    bool get_use_geodesic() const { return use_geodesic; }
     Object *get_tile_at_position(const Vector3 &world_pos);
 
 protected:
@@ -36,6 +38,7 @@ private:
     float radius = 1.0f;
     int32_t resolution = 1;
     float hex_size = 0.1f;
+    bool use_geodesic = true;
     std::vector<IcosahedronFace> faces;
     std::unordered_map<std::string, ObjectID> tiles; // key -> tile id
 

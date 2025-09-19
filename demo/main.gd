@@ -5,9 +5,9 @@ func _ready():
 	var tile_mesh = preload("res://tile.tscn")
 	
 	# Configure grid
-	hex_grid.radius = 8.0
-	hex_grid.resolution = 1
-	hex_grid.hex_size = 0.1
+	hex_grid.radius = 5.0
+	hex_grid.resolution = 3
+	hex_grid.hex_size = 0.5
 	
 	# Generate grid
 	hex_grid.generate_grid()
